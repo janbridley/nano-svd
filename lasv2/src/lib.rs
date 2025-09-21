@@ -258,7 +258,6 @@ mod tests {
         assert_ulps_eq!(v_norm, 1.0, max_ulps = 4);
 
         // Reconstruct original matrix
-        let matrix = faer::mat![[f, g], [0.0, h]];
         let u_faer = faer::mat![[u[0][0], u[0][1]], [u[1][0], u[1][1]]];
         let v_faer = faer::mat![[v[0][0], v[0][1]], [v[1][0], v[1][1]]];
         let s_faer = faer::mat![[ssmax, 0.0], [0.0, ssmin]];
