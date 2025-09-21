@@ -269,7 +269,11 @@ mod tests {
 
         assert_ulps_eq!(reconstructed[(0, 0)], f, max_ulps = 10);
         assert_ulps_eq!(reconstructed[(0, 1)], g, max_ulps = 10);
-        assert_ulps_eq!(reconstructed[(1, 0)], 0.0, epsilon = f64::EPSILON * 4.0);
+        assert_ulps_eq!(
+            reconstructed[(1, 0)].abs(),
+            0.0,
+            epsilon = f64::EPSILON * 4.0
+        );
         assert_ulps_eq!(reconstructed[(1, 1)], h, max_ulps = 10);
     }
 }
