@@ -180,6 +180,9 @@ pub type Mat22<T> = [[T; 2]; 2];
 /// use lasv2::svd2_tri;
 /// let (u, (smax, smin), v) = svd2_tri(1.0, 0.0, 1.0);
 /// assert_eq!((smax, smin), (1.0, 1.0));
+///
+/// assert_eq!(u, [[1.0, 0.0], [0.0, 1.0]]);
+/// assert_eq!(v, [[1.0, 0.0], [0.0, 1.0]]);
 /// ```
 pub fn svd2_tri<T: Float>(f: T, g: T, h: T) -> (Mat22<T>, (T, T), Mat22<T>) {
     let (mut ssmin, mut ssmax, mut snr, mut csr, mut snl, mut csl) = (
