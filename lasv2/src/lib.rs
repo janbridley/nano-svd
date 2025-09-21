@@ -174,7 +174,7 @@ pub fn svd2_tri<T: Float>(f: T, g: T, h: T) -> (Mat22<T>, (T, T), Mat22<T>) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::{assert_relative_eq, assert_ulps_eq};
+    use approx::assert_ulps_eq;
     use rstest::rstest;
 
     const SMALL_F64: f64 = 1e-15;
