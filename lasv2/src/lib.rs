@@ -219,7 +219,6 @@ mod tests {
         let v = faer::mat![[csr, -snr], [snr, csr]];
 
         let reconstructed = u * faer::mat![[ssmax, 0.0], [0.0, ssmin]] * v.transpose();
-        println!("\n{:?}", faer::mat![[ssmax, 0.0], [0.0, ssmin]]);
         assert_ulps_eq!(reconstructed[(0, 0)], f, max_ulps = 10);
         assert_ulps_eq!(reconstructed[(0, 1)], g, max_ulps = 10);
         assert_ulps_eq!(
