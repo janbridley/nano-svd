@@ -1,0 +1,107 @@
+name: test
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+  push:
+    branches:
+    - main
+
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: always
+  CLICOLOR: 1
+
+jobs:
+  unit_test:
+    name: Unit test [${{ matrix.profile }}-rust-${{ matrix.rust }}-${{ matrix.os }}]
+    runs-on: [ubuntu-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - macos-14
+        rust:
+          - 1.88.0
+          - 1.89.0
+        profile:
+         - dev
+        target:
+         - ''
+
+        include:
+        # Add a release build on linux with the latest version of rust.
+        - os: ubuntu-24.04
+          rust: 1.89.0
+          profile: release
+
+        # Add a WASM build.
+        - os: ubuntu-24.04
+          rust: 1.89.0
+          profile: dev-wasm
+          target: wasm32-unknown-unknown
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    # This code is needed on GitHub Hosted runners, disable for now while we use private runners.
+    - name: Update rust
+      run: rustup install ${{ matrix.rust }} --no-self-update
+    - name: Install target
+      run: rustup target install ${{ matrix.target }} --toolchain ${{ matrix.rust }}
+      if: ${{ matrix.target != '' }}
+    - name: Set default target
+      run: rustup default ${{ matrix.rust }}
+    - name: Check rust installation
+      run: rustc -vV
+
+    - name: Build
+      run: >
+        cargo build
+        --profile ${{ matrix.profile }}
+        ${{ matrix.target != '' && '--target' || '' }}
+        ${{ matrix.target }}
+        --workspace
+        --all-targets
+        --all-features
+        --verbose
+
+    - name: Run tests
+      run: >
+        cargo test
+        --profile ${{ matrix.profile }}
+        --workspace
+        --verbose
+      if: ${{ matrix.target == '' }}
+
+    - name: Build API documentation
+      run: >
+        cargo doc
+        --workspace
+        --all-features
+        --no-deps
+      if: ${{ matrix.target == '' }}
+
+    - name: Run benchmarks
+      run: cargo bench
+      if: ${{ matrix.target == '' }}
+
+  # tests_complete:
+  #   name: All tests
+  #   if: always()
+  #   needs: [unit_test]
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #   - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
+  #   - name: Done
+  #     run: exit 0
