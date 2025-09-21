@@ -3,6 +3,7 @@ name = "lasv2"
 version = "0.1.0"
 edition = "2024"
 license-file = "../LICENSE"
+description = "Faithful port of LAPACK's LASV2 subroutine."
 
 [dependencies]
 num-traits = "0.2.19"
