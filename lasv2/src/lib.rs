@@ -130,6 +130,7 @@ mod tests {
     #[rstest]
     #[case::eye((1.0, 0.0, 1.0))]
     #[case::eye_neg((-1.0, 0.0, -1.0))]
+    #[case::topright((0.0, 5.0, 0.0))]
     #[case::diagonal((3.0, 0.0, 4.0))]
     #[case::standard((-2.0, 5.0, -3.0))]
     #[case::zero((0.0, 0.0, 0.0))]
@@ -158,17 +159,14 @@ mod tests {
 
         // Compare against faer SVD
         let svd = matrix.svd().unwrap();
-        let (faeru, faers, faerv) = (svd.U().to_owned(), svd.S(), svd.V().to_owned());
-        assert_ulps_eq!(ssmin.abs(), faers[1], max_ulps = 10);
-        assert_ulps_eq!(ssmax.abs(), faers[0], max_ulps = 10);
+        assert_ulps_eq!(ssmin.abs(), svd.S()[1], max_ulps = 10);
+        assert_ulps_eq!(ssmax.abs(), svd.S()[0], max_ulps = 10);
 
-        let u = faer::mat![[csl, snl], [-snl, csl]];
-        let v = faer::mat![[csr, snr], [-snr, csr]];
-
-        // println!("{u:?}\n{faeru:?}");
-        // assert_ulps_eq!(u[(0, 0)], faeru[(0, 0)], max_ulps = 10);
+        let u = faer::mat![[csl, -snl], [snl, csl]];
+        let v = faer::mat![[csr, -snr], [snr, csr]];
 
         let reconstructed = u * faer::mat![[ssmax, 0.0], [0.0, ssmin]] * v.transpose();
+        println!("\n{:?}", faer::mat![[ssmax, 0.0], [0.0, ssmin]]);
         assert_ulps_eq!(reconstructed[(0, 0)], f, max_ulps = 10);
         assert_ulps_eq!(reconstructed[(0, 1)], g, max_ulps = 10);
         assert_ulps_eq!(
