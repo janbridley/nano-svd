@@ -1,13 +1,13 @@
 use num_traits::Float;
 
-/**Computes the singular value decomposition of a 2-by-2 triangular matrix.
+/** Computes the singular value decomposition of a 2-by-2 triangular matrix.
 
 
-This method implements the same function signature as LAPACK. The [`SVDTri2`] function
+This method implements the same function signature as LAPACK. The [`svd2_tri`] function
 provides a more intuitive interface for the same decomposition.
 */
 #[expect(clippy::too_many_arguments)]
-pub fn lasv2<T: Clone + PartialOrd + Float>(
+pub fn lasv2<T: Float>(
     f: &T,
     g: &T,
     h: &T,
@@ -115,6 +115,60 @@ pub fn lasv2<T: Clone + PartialOrd + Float>(
     };
     *ssmax = ssmax.copysign(tsign);
     *ssmin = ssmin.copysign(tsign * f.signum() * h.signum());
+}
+
+/// A Stack allocated 2x2 matrix of type T.
+pub type Mat22<T> = [[T; 2]; 2];
+
+/// Computes the singular value decomposition of a 2-by-2 triangular matrix.
+///
+/// Given the elements `f`, `g`, and `h` of an upper-triangular matrix:
+///
+/// ```text
+/// [ f  g ]
+/// [ 0  h ]
+/// ```
+///
+/// This function returns a tuple `(U, S, V)` where:
+/// - `U` is a 2×2 orthogonal matrix (left singular vectors),
+/// - `S` is a tuple `(σ_max, σ_min)` of singular values in descending order,
+/// - `V` is a 2×2 orthogonal matrix (right singular vectors).
+///
+/// # Type Parameters
+/// - `T`: A floating-point type that implements the [`Float`] trait.
+///
+/// # Parameters
+/// - `f`: Top-left element of the triangular matrix.
+/// - `g`: Top-right element of the triangular matrix.
+/// - `h`: Bottom-right element of the triangular matrix.
+///
+/// # Returns
+/// `(U, (σ_max, σ_min), V)`
+///
+/// # Example
+/// ```rust
+/// use lasv2::svd2_tri;
+/// let (u, (smax, smin), v) = svd2_tri(1.0, 0.0, 1.0);
+/// assert_eq!((smax, smin), (1.0, 1.0));
+/// ```
+pub fn svd2_tri<T: Float>(f: T, g: T, h: T) -> (Mat22<T>, (T, T), Mat22<T>) {
+    let (mut ssmin, mut ssmax, mut snr, mut csr, mut snl, mut csl) = (
+        T::zero(),
+        T::zero(),
+        T::zero(),
+        T::zero(),
+        T::zero(),
+        T::zero(),
+    );
+    lasv2(
+        &f, &g, &h, &mut ssmin, &mut ssmax, &mut snr, &mut csr, &mut snl, &mut csl,
+    );
+
+    (
+        [[csl, -snl], [snl, csl]],
+        (ssmax, ssmin),
+        [[csr, -snr], [snr, csr]],
+    )
 }
 
 #[cfg(test)]
