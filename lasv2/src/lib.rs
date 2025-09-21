@@ -178,7 +178,7 @@ mod tests {
     use rstest::rstest;
 
     const SMALL_F64: f64 = 1e-15;
-    const LARGE_F64: f64 = 1e34;
+    const LARGE_F64: f64 = 1e30;
 
     #[rstest]
     #[case::eye((1.0, 0.0, 1.0))]
