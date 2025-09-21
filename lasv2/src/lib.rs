@@ -178,7 +178,7 @@ mod tests {
     use rstest::rstest;
 
     const SMALL_F64: f64 = 1e-15;
-    const LARGE_F64: f64 = 1e15;
+    const LARGE_F64: f64 = 1e30;
 
     #[rstest]
     #[case::eye((1.0, 0.0, 1.0))]
@@ -221,8 +221,13 @@ mod tests {
         let reconstructed = u * faer::mat![[ssmax, 0.0], [0.0, ssmin]] * v.transpose();
         assert_ulps_eq!(reconstructed[(0, 0)], f, max_ulps = 10);
         assert_ulps_eq!(reconstructed[(0, 1)], g, max_ulps = 10);
-        // Verify the zero is (relatively) close to zero
-        assert!(reconstructed[(1, 0)].abs() < ssmax / ssmin * f64::EPSILON * 4.0);
+        let max_in = f64::max(f, f64::max(g, h));
+        let min_in = f64::min(f, f64::min(g, h));
+        assert_ulps_eq!(
+            reconstructed[(1, 0)].abs(),
+            0.0,
+            epsilon = f64::max((max_in - min_in).abs(), 1.0) * f64::EPSILON * 4.0
+        );
         assert_ulps_eq!(reconstructed[(1, 1)], h, max_ulps = 10);
     }
 
@@ -269,7 +274,15 @@ mod tests {
 
         assert_ulps_eq!(reconstructed[(0, 0)], f, max_ulps = 10);
         assert_ulps_eq!(reconstructed[(0, 1)], g, max_ulps = 10);
-        assert!(reconstructed[(1, 0)].abs() < ssmax / ssmin * f64::EPSILON * 4.0);
+
+        let max_in = f64::max(f, f64::max(g, h));
+        let min_in = f64::min(f, f64::min(g, h));
+        println!("{}", (max_in - min_in).abs() * f64::EPSILON * 4.0);
+        assert_ulps_eq!(
+            reconstructed[(1, 0)].abs(),
+            0.0,
+            epsilon = f64::max((max_in - min_in).abs(), 1.0) * f64::EPSILON * 4.0
+        );
         assert_ulps_eq!(reconstructed[(1, 1)], h, max_ulps = 10);
     }
 }
