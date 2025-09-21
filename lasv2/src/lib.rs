@@ -1,3 +1,33 @@
+/*! Faithful ports of Lapack's `lasv2` subroutines with Rust generic types.
+
+Given the elements `f`, `g`, and `h` of an upper-triangular matrix:
+```text
+[ f  g ]
+[ 0  h ]
+```
+This crate returns data corresponding with the singular values and vectors of that
+matrix. As in lapack, singular values are not guaranteed to be positive, although we do
+guarantee that `σ_max.abs() >= σ_min.abs()`.
+
+[`lasv2`] provides a matching interface to the original Fortran source code, although it
+is recommented to use [`svd2_tri`] which offers a more ergonomic signature. Both
+functions operate on `T: num_traits::Float`, which is automatically implemented for
+`f32` and `f64` and can be implemented for custom types as desired. While the code
+guarantees accuracy up to a few units in last place for `f32` and `f64`, no guarantees
+are made for alternative types that do not share behavior with IEEE floats.
+
+
+# Example
+```rust
+use lasv2::svd2_tri;
+let (u, (smax, smin), v) = svd2_tri(1.0, 0.0, 1.0);
+assert_eq!((smax, smin), (1.0, 1.0));
+
+assert_eq!(u, [[1.0, 0.0], [0.0, 1.0]]);
+assert_eq!(v, [[1.0, 0.0], [0.0, 1.0]]);
+```
+
+*/
 use num_traits::Float;
 
 /** Computes the singular value decomposition of a 2-by-2 triangular matrix.
