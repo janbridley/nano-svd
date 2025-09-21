@@ -5,3 +5,9 @@ edition = "2024"
 license-file = "../LICENSE"
 
 [dependencies]
+num-traits = "0.2.19"
+
+[dev-dependencies]
+approx = "0.5.1"
+faer = "0.22.6"
+rstest = "0.26.1"
