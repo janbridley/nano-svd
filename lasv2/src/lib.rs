@@ -221,12 +221,8 @@ mod tests {
         let reconstructed = u * faer::mat![[ssmax, 0.0], [0.0, ssmin]] * v.transpose();
         assert_ulps_eq!(reconstructed[(0, 0)], f, max_ulps = 10);
         assert_ulps_eq!(reconstructed[(0, 1)], g, max_ulps = 10);
-        assert_ulps_eq!(
-            reconstructed[(1, 0)].abs(),
-            0.0,
-            // Scale based on condition number
-            epsilon = ssmax / ssmin * f64::EPSILON * 4.0
-        );
+        // Verify the zero is (relatively) close to zero
+        assert!(reconstructed[(1, 0)].abs() < ssmax / ssmin * f64::EPSILON * 4.0);
         assert_ulps_eq!(reconstructed[(1, 1)], h, max_ulps = 10);
     }
 
@@ -273,12 +269,7 @@ mod tests {
 
         assert_ulps_eq!(reconstructed[(0, 0)], f, max_ulps = 10);
         assert_ulps_eq!(reconstructed[(0, 1)], g, max_ulps = 10);
-        assert_ulps_eq!(
-            reconstructed[(1, 0)].abs(),
-            0.0,
-            // Scale based on condition number
-            epsilon = ssmax / ssmin * f64::EPSILON * 4.0
-        );
+        assert!(reconstructed[(1, 0)].abs() < ssmax / ssmin * f64::EPSILON * 4.0);
         assert_ulps_eq!(reconstructed[(1, 1)], h, max_ulps = 10);
     }
 }
