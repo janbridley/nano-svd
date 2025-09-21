@@ -1,6 +1,4 @@
-use std::ops::Div;
-
-use num_traits::{Float, Signed};
+use num_traits::Float;
 
 /**Computes the singular value decomposition of a 2-by-2 triangular matrix.
 
@@ -8,6 +6,7 @@ use num_traits::{Float, Signed};
 This method implements the same function signature as LAPACK. The [`SVDTri2`] function
 provides a more intuitive interface for the same decomposition.
 */
+#[expect(clippy::too_many_arguments)]
 pub fn lasv2<T: Clone + PartialOrd + Float>(
     f: &T,
     g: &T,
