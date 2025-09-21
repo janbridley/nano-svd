@@ -229,4 +229,48 @@ mod tests {
         );
         assert_ulps_eq!(reconstructed[(1, 1)], h, max_ulps = 10);
     }
+
+    #[rstest]
+    #[case::eye((1.0, 0.0, 1.0))]
+    #[case::eye_neg((-1.0, 0.0, -1.0))]
+    #[case::topright((0.0, 5.0, 0.0))]
+    #[case::diagonal((3.0, 0.0, 4.0))]
+    #[case::standard((-2.0, 5.0, -3.0))]
+    #[case::zero((0.0, 0.0, 0.0))]
+    #[case::degenerate((LARGE_F64, 1e8, SMALL_F64))]
+    #[case::nilpotent_g((0.0, 5.0, 0.0))]
+    #[case::nilpotent_f((5.0, 0.0, 0.0))]
+    #[case::nilpotent_h((0.0, 0.0, 5.0))]
+    #[case::all_tiny_positive((SMALL_F64, SMALL_F64, SMALL_F64))]
+    #[case::all_tiny_negative((-SMALL_F64, -SMALL_F64, -SMALL_F64))]
+    #[case::large_mixed_signs((LARGE_F64, -LARGE_F64, LARGE_F64))]
+    #[case::large_opposite_signs((-LARGE_F64, LARGE_F64, -LARGE_F64))]
+    fn test_svd2_tri_param(#[case] (f, g, h): (f64, f64, f64)) {
+        let (u, (ssmax, ssmin), v) = svd2_tri(f, g, h);
+
+        assert!(ssmax.abs() >= ssmin);
+        assert!((ssmin <= 0.0 && ssmax <= 0.0) || ssmin >= 0.0);
+
+        // Make sure we're orthogonal
+        let u_norm = u[0][0] * u[0][0] + u[1][0] * u[1][0];
+        let v_norm = v[0][0] * v[0][0] + v[1][0] * v[1][0];
+        assert_ulps_eq!(u_norm, 1.0, max_ulps = 4);
+        assert_ulps_eq!(v_norm, 1.0, max_ulps = 4);
+
+        // Reconstruct original matrix
+        let matrix = faer::mat![[f, g], [0.0, h]];
+        let u_faer = faer::mat![[u[0][0], u[0][1]], [u[1][0], u[1][1]]];
+        let v_faer = faer::mat![[v[0][0], v[0][1]], [v[1][0], v[1][1]]];
+        let s_faer = faer::mat![[ssmax, 0.0], [0.0, ssmin]];
+
+        let reconstructed = u_faer * s_faer * v_faer.transpose();
+
+        println!("orig: {:?}", [[f, g], [0.0, h]]);
+        println!("reco: {reconstructed:?}");
+
+        assert_ulps_eq!(reconstructed[(0, 0)], f, max_ulps = 10);
+        assert_ulps_eq!(reconstructed[(0, 1)], g, max_ulps = 10);
+        assert_ulps_eq!(reconstructed[(1, 0)], 0.0, epsilon = f64::EPSILON * 4.0);
+        assert_ulps_eq!(reconstructed[(1, 1)], h, max_ulps = 10);
+    }
 }
